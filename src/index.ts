@@ -125,6 +125,17 @@ export const i18nVue: Plugin = {
   }
 }
 
+export function createI18nVue<Schema extends object, Locales extends string>({
+  messages,
+  lang
+}: { lang: Locales, messages: { [K in Locales]: { [key in keyof Schema]: string } }}) {
+  return {
+    install(app, options: PluginOptionsInterface = {}) {
+      i18nVue.install(app, options = { ...options, messages: messages[lang], lang })
+    }
+  }
+}
+
 /**
  * The I18n class. Encapsulates all language loading and translation logic.
  */
@@ -151,6 +162,13 @@ export class I18n {
    */
   constructor(options: OptionsInterface = {}) {
     this.options = { ...DEFAULT_OPTIONS, ...options }
+    if (options.messages) {
+      this.setLanguage({
+        lang: options.lang,
+        messages: options.messages
+      })
+      return;
+    }
     if (this.options.fallbackMissingTranslations) {
       this.loadFallbackLanguage()
     } else {
